@@ -5,29 +5,24 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.roomaula63.R
+import com.example.roomaula63.home.CivilizationModel
+import com.example.roomaula63.home.viewmodel.CivilizationViewModel
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ListaFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ListaFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+
+    private var _View = view
+    private lateinit var _listaAdapter: ItemAdapter
+    private var _listaDeCivilizacoes = mutableListOf<CivilizationModel>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+
     }
 
     override fun onCreateView(
@@ -38,23 +33,41 @@ class ListaFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_lista, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ListaFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ListaFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        _View = view
+        criarRecyclerView()
+
+        val viewModel = ViewModelProvider( this)[CivilizationViewModel::class.java]
+
+        viewModel.obterLista().observe(viewLifecycleOwner,{
+            exibirResultados(it)
+        })
+    }
+
+    private fun exibirResultados(lista : List<CivilizationModel>?) {
+        lista?.let { _listaDeCivilizacoes.addAll(it) }
+        _listaAdapter.notifyDataSetChanged()
+
+    }
+
+    private fun criarRecyclerView() {
+        val lista = _View?.findViewById<RecyclerView>(R.id.lista)
+        val manager: LinearLayoutManager = LinearLayoutManager(_View?.context)
+
+        _listaDeCivilizacoes = mutableListOf<CivilizationModel>()
+        _listaAdapter = ItemAdapter(_listaDeCivilizacoes)
+
+        lista?.apply {
+            setHasFixedSize(true)
+
+            layoutManager = manager
+            adapter = _listaAdapter
+        }
+
+
     }
 }
+
+
